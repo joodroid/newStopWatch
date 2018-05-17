@@ -17,6 +17,17 @@ export default class App extends React.Component {
     });
   };
 
+  _handleReset = () => {
+    this.setState((prevState) => {
+      return {
+        minute: 0,
+        second: 0,
+        mili: 0,
+        startingTime: null,
+      };
+    });
+  };
+
   _handleUpdate = () => {
     this.setState((prevState) => {
       currentTime = new Date();
@@ -36,6 +47,7 @@ export default class App extends React.Component {
         <View>
           <TimeDisplay
             handleStart={this._handleStart}
+            handleReset={this._handleReset}
             handleUpdate={this._handleUpdate}
             minute={this.state.minute}
             second={this.state.second}

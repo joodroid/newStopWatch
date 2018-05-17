@@ -5,6 +5,7 @@ import {Constants} from 'expo';
 export default class DigitalClock extends Component {
   state = {
     _interval: null,
+    isRunning: false,
   };
 
   _clearTimer = () => {
@@ -12,14 +13,28 @@ export default class DigitalClock extends Component {
   };
 
   _onStart = () => {
-    if (this.props.mili < 1001) {
-      this.props.handleStart(),
-        this.setState({
-          _interval: setInterval(() => this.props.handleUpdate(), 100),
-        });
-    }
+    // if (this.state._interval) {
+    //   this._clearTimer();
+    // }
+    this.props.handleStart();
+    this.setState({
+      isRunning: true,
+      _interval: setInterval(() => this.props.handleUpdate(), 100),
+    });
   };
 
+  _onReset = () => {
+    this.props.handleReset();
+  };
+
+  _onStop = () => {
+    if (this.state._interval) {
+      this._clearTimer();
+      this.setState({
+        isRunning: false,
+      });
+    }
+  };
   _onPause = () => {
     this._clearTimer();
   };
@@ -57,13 +72,38 @@ export default class DigitalClock extends Component {
           )}
         </View>
         <View style={styles.containerTap}>
-          <TouchableHighlight style={styles.touchable} onPress={this._onPause}>
-            <Text style={styles.text}>Pause</Text>
-          </TouchableHighlight>
+          {this.props.mili > 0 && this.state.isRunning === false ? (
+            <TouchableHighlight
+              style={styles.touchable}
+              onPress={this._onReset}
+            >
+              <Text style={styles.text}>Reset</Text>
+            </TouchableHighlight>
+          ) : (
+            <TouchableHighlight
+              style={styles.touchable}
+              onPress={this._onPause}
+            >
+              <Text style={styles.text}>Lap</Text>
+            </TouchableHighlight>
+          )}
+
           <View style={styles.separator} />
-          <TouchableHighlight style={styles.touchable} onPress={this._onStart}>
-            <Text style={styles.text}>Start</Text>
-          </TouchableHighlight>
+          {this.state.isRunning === false ? (
+            <TouchableHighlight
+              style={styles.touchable}
+              onPress={this._onStart}
+            >
+              <Text style={styles.text}>Start</Text>
+            </TouchableHighlight>
+          ) : (
+            <TouchableHighlight
+              style={styles.touchableRed}
+              onPress={this._onStop}
+            >
+              <Text style={styles.text}>Stop</Text>
+            </TouchableHighlight>
+          )}
         </View>
       </View>
     );
@@ -113,5 +153,13 @@ const styles = StyleSheet.create({
   separator: {
     marginRight: 10,
     marginLeft: 10,
+  },
+  touchableRed: {
+    backgroundColor: 'red',
+    height: 80,
+    width: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
