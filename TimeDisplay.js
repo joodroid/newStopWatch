@@ -1,11 +1,18 @@
 import React, {Component} from 'react';
-import {TouchableHighlight, StyleSheet, Text, View} from 'react-native';
+import {
+  ScrollView,
+  TouchableHighlight,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {Constants} from 'expo';
 
 export default class DigitalClock extends Component {
   state = {
     _interval: null,
     isRunning: false,
+    lapList: [],
   };
 
   _clearTimer = () => {
@@ -13,9 +20,6 @@ export default class DigitalClock extends Component {
   };
 
   _onStart = () => {
-    // if (this.state._interval) {
-    //   this._clearTimer();
-    // }
     this.props.handleStart();
     this.setState({
       isRunning: true,
@@ -35,8 +39,25 @@ export default class DigitalClock extends Component {
       });
     }
   };
+
   _onPause = () => {
     this._clearTimer();
+  };
+
+  _onNewLap = () => {
+    let {minute, second, mili} = this.props;
+    let miliString =
+      mili < 100 ? `0${Math.floor(mili / 10)}` : `${Math.floor(mili / 10)}`;
+    let secondString =
+      second < 10 ? `0${Math.floor(second)}` : `${Math.floor(second)}`;
+    let minuteString =
+      minute < 10 ? `0${Math.floor(minute)}` : `${Math.floor(minute)}`;
+
+    let {lapList} = this.state;
+    let record = `${minuteString}:${secondString}.${miliString}`;
+    this.setState({
+      lapList: [...this.state.lapList, record],
+    });
   };
 
   render() {
@@ -82,7 +103,7 @@ export default class DigitalClock extends Component {
           ) : (
             <TouchableHighlight
               style={styles.touchable}
-              onPress={this._onPause}
+              onPress={this._onNewLap}
             >
               <Text style={styles.text}>Lap</Text>
             </TouchableHighlight>
@@ -105,9 +126,30 @@ export default class DigitalClock extends Component {
             </TouchableHighlight>
           )}
         </View>
+        <ScrollView style={styles.lapWrapper}>
+          {this.state.lapList.map((item, index) => {
+            return <Lap idx={index} key={index} time={item} />;
+          })}
+          <View
+            style={{
+              borderBottomWidth: 0.5,
+              borderBottomColor: '#eeeeee',
+            }}
+          />
+        </ScrollView>
       </View>
     );
   }
+}
+
+function Lap(props: LapProps) {
+  let {idx, time} = props;
+  return (
+    <View style={styles.lap}>
+      <Text style={[styles.text, {flex: 1}]}>{`Lap. ${idx + 1}   - `}</Text>
+      <Text style={[styles.text, {flex: 1, textAlign: 'right'}]}>{time}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -117,6 +159,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#000',
     alignItems: 'center',
+  },
+  lapWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    // borderBottomWidth: 0.5,
+    // borderBottomColor: '#eeeeee',
+  },
+  lap: {
+    paddingTop: 4,
+    borderTopWidth: 0.5,
+    borderTopColor: '#eeeeee',
+    flexDirection: 'row',
+    height: 30,
+    width: '100%',
+    backgroundColor: 'rgba(255,255,255,0.02)',
   },
   text: {
     color: '#fff',
@@ -132,15 +189,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#000',
     alignItems: 'center',
-    justifyContent: 'center',
     width: '100%',
   },
   containerTap: {
     flex: 1,
     flexDirection: 'row',
     backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   touchable: {
     backgroundColor: 'green',
